@@ -30,7 +30,7 @@ export default function Dashboard() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-4 text-black">Dashboard</h1>
       <p className="text-lg text-black">
-        Hoş geldiniz, kullanıcı ID'niz: {user.id.replace(/'/g, '&rsquo;')}
+        Hoş geldiniz, kullanıcı ID'niz: {user.id.replace(/'/g, '&rsquo;')} {/* Ensure any single quotes are escaped */}
       </p>
       <button
         onClick={() => {
