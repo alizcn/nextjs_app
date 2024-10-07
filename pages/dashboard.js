@@ -20,7 +20,7 @@ export default function Dashboard() {
         router.push('/login');
       }
     }
-  }, []);
+  }, [router]); // Add 'router' as a dependency
 
   if (!user) {
     return <p>Yükleniyor...</p>;
