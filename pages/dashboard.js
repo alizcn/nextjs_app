@@ -1,4 +1,3 @@
-// pages/dashboard.js
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import jwt from 'jsonwebtoken';
@@ -6,24 +5,30 @@ import jwt from 'jsonwebtoken';
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // New loading state
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (!token) {
       router.push('/login');
-    } else {
-      try {
-        const decoded = jwt.decode(token);
-        setUser(decoded);
-      } catch (error) {
-        console.error('Token geçersiz:', error);
-        router.push('/login');
-      }
+      return;
     }
-  }, [router]); // Ensure 'router' is included as a dependency
 
-  if (!user) {
-    return <p>Yükleniyor...</p>;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+      setUser(decoded);
+    } catch (error) {
+      console.error('Token geçersiz:', error);
+      localStorage.removeItem('token'); // Clear invalid token
+      router.push('/login');
+    } finally {
+      setLoading(false); // Set loading to false once the process is complete
+    }
+  }, [router]);
+
+  if (loading) {
+    return <p>Yükleniyor...</p>; // Loading state
   }
 
   return (

@@ -1,7 +1,10 @@
-// pages/api/register.js
 import dbConnect from '../../lib/mongodb';
 import User from '../../models/User';
 import bcrypt from 'bcryptjs';
+
+const sendResponse = (res, statusCode, success, message, data = null) => {
+  return res.status(statusCode).json({ success, message, data });
+};
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -11,15 +14,16 @@ export default async function handler(req, res) {
   if (method === 'POST') {
     const { name, email, password } = req.body;
 
+    // Basic validation
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: 'Tüm alanları doldurun.' });
+      return sendResponse(res, 400, false, 'Tüm alanları doldurun.'); // All fields must be filled.
     }
 
     try {
       const existingUser = await User.findOne({ email });
 
       if (existingUser) {
-        return res.status(400).json({ success: false, message: 'Email zaten kullanımda.' });
+        return sendResponse(res, 400, false, 'Email zaten kullanımda.'); // Email already in use.
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,12 +34,13 @@ export default async function handler(req, res) {
         password: hashedPassword,
       });
 
-      return res.status(201).json({ success: true, data: user });
+      return sendResponse(res, 201, true, 'Kullanıcı başarıyla oluşturuldu.', user); // User successfully created.
     } catch (error) {
-      return res.status(500).json({ success: false, message: 'Sunucu hatası.' });
+      console.error(error); // Log the error for debugging
+      return sendResponse(res, 500, false, 'Sunucu hatası.'); // Server error.
     }
   } else {
     res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${method} Not Allowed`);
+    return res.status(405).end(`Method ${method} Not Allowed`); // Method not allowed.
   }
 }

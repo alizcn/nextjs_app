@@ -1,10 +1,10 @@
-// pages/login.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -14,21 +14,27 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true); // Start loading
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      // Token'ı localStorage'a kaydedebilir veya cookie kullanabilirsiniz
-      localStorage.setItem('token', data.token);
-      router.push('/dashboard');
-    } else {
-      setError(data.message);
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        router.push('/dashboard');
+      } else {
+        setError(data.message);
+      }
+    } catch (error) {
+      setError('Bir hata oluştu. Lütfen tekrar deneyin.'); // Network error handling
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -39,9 +45,11 @@ export default function Login() {
         className="bg-white p-6 rounded shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl mb-4 text-black">Giriş Yap</h2>
-        {error && <p className="text-red-500 text-black">{error}</p>}
+        {error && <p className="text-red-500">{error}</p>}
         <div className="mb-4">
-          <label className="block mb-1 text-black">Email</label>
+          <label className="block mb-1 text-black" htmlFor="email">
+            Email
+          </label>
           <input
             type="email"
             name="email"
@@ -49,10 +57,13 @@ export default function Login() {
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded text-black"
             required
+            aria-label="Email"
           />
         </div>
         <div className="mb-4">
-          <label className="block mb-1 text-black">Şifre</label>
+          <label className="block mb-1 text-black" htmlFor="password">
+            Şifre
+          </label>
           <input
             type="password"
             name="password"
@@ -60,13 +71,15 @@ export default function Login() {
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded text-black"
             required
+            aria-label="Şifre"
           />
         </div>
         <button
           type="submit"
-          className="w-full bg-green-500 text-white py-2 rounded"
+          className={`w-full bg-green-500 text-white py-2 rounded ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={loading} // Disable the button while loading
         >
-          Giriş Yap
+          {loading ? 'Yükleniyor...' : 'Giriş Yap'}
         </button>
       </form>
     </div>
