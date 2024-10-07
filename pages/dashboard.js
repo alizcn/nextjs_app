@@ -20,7 +20,7 @@ export default function Dashboard() {
         router.push('/login');
       }
     }
-  }, [router]); // Add 'router' as a dependency
+  }, [router]); // Ensure 'router' is included as a dependency
 
   if (!user) {
     return <p>Yükleniyor...</p>;
@@ -29,7 +29,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-4 text-black">Dashboard</h1>
-      <p className="text-lg text-black">Hoş geldiniz, kullanıcı ID'niz: {user.id}</p>
+      <p className="text-lg text-black">
+        Hoş geldiniz, kullanıcı ID'niz: {user.id.replace(/'/g, '&rsquo;')}
+      </p>
       <button
         onClick={() => {
           localStorage.removeItem('token');
